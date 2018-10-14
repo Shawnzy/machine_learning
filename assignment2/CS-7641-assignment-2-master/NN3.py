@@ -1,12 +1,12 @@
 """
-GA NN training on Madelon data (Feature selection complete)
+GA NN training on Churn data (Feature selection complete)
 
 """
 import os
 import csv
 import time
 import sys
-sys.path.append("C:/MOOCs/CS 7641/proj2/ABAGAIL.jar")
+sys.path.append("/home/shawnzy/Development/machine_learning/assignment2/CS-7641-assignment-2-master/ABAGAIL/ABAGAIL.jar")
 from func.nn.backprop import BackPropagationNetworkFactory
 from shared import SumOfSquaresError, DataSet, Instance
 from opt.example import NeuralNetworkOptimizationProblem
@@ -17,13 +17,13 @@ import opt.ga.StandardGeneticAlgorithm as StandardGeneticAlgorithm
 from func.nn.activation import RELU
 
 # Network parameters found "optimal" in Assignment 1
-INPUT_LAYER = 31
-HIDDEN_LAYER1 = 62
-HIDDEN_LAYER2 = 62
-HIDDEN_LAYER3 = 62
+INPUT_LAYER = 41
+HIDDEN_LAYER1 = 5
 OUTPUT_LAYER = 1
 TRAINING_ITERATIONS = 5001
 OUTFILE = './NN_OUTPUT/XXX_LOG.txt'
+if not os.path.exists(os.path.dirname(OUTFILE)):
+    os.makedirs(os.path.dirname(OUTFILE))
 
 
 def initialize_instances(infile):
@@ -69,7 +69,7 @@ def errorOnDataSet(network,ds,measure):
 def train(oa, network, oaName, training_ints,validation_ints,testing_ints, measure):
     """Train a given network on a set of instances.
     """
-    print "\nError results for %s\n---------------------------" % (oaName,)
+    print("\nError results for %s\n---------------------------" % (oaName,))
     times = [0]
     for iteration in xrange(TRAINING_ITERATIONS):
         start = time.clock()
@@ -80,15 +80,15 @@ def train(oa, network, oaName, training_ints,validation_ints,testing_ints, measu
     	    MSE_trg, acc_trg = errorOnDataSet(network,training_ints,measure)
             MSE_val, acc_val = errorOnDataSet(network,validation_ints,measure)
             MSE_tst, acc_tst = errorOnDataSet(network,testing_ints,measure)
-            txt = '{},{},{},{},{},{},{},{}\n'.format(iteration,MSE_trg,MSE_val,MSE_tst,acc_trg,acc_val,acc_tst,times[-1]);print txt
+            txt = '{},{},{},{},{},{},{},{}\n'.format(iteration,MSE_trg,MSE_val,MSE_tst,acc_trg,acc_val,acc_tst,times[-1]);print(txt)
             with open(OUTFILE.replace('XXX',oaName),'a+') as f:
                 f.write(txt)
 
 def main(P,mate,mutate):
     """Run this experiment"""
-    training_ints = initialize_instances('m_trg.csv')
-    testing_ints = initialize_instances('m_test.csv')
-    validation_ints = initialize_instances('m_val.csv')
+    training_ints = initialize_instances('c_trg.csv')
+    testing_ints = initialize_instances('c_test.csv')
+    validation_ints = initialize_instances('c_val.csv')
     factory = BackPropagationNetworkFactory()
     measure = SumOfSquaresError()
     data_set = DataSet(training_ints)
@@ -97,7 +97,7 @@ def main(P,mate,mutate):
     oa_name = "GA_{}_{}_{}".format(P,mate,mutate)
     with open(OUTFILE.replace('XXX',oa_name),'w') as f:
         f.write('{},{},{},{},{},{},{},{}\n'.format('iteration','MSE_trg','MSE_val','MSE_tst','acc_trg','acc_val','acc_tst','elapsed'))
-    classification_network = factory.createClassificationNetwork([INPUT_LAYER, HIDDEN_LAYER1,HIDDEN_LAYER2,HIDDEN_LAYER3, OUTPUT_LAYER],relu)
+    classification_network = factory.createClassificationNetwork([INPUT_LAYER, HIDDEN_LAYER1, OUTPUT_LAYER],relu)
     nnop = NeuralNetworkOptimizationProblem(data_set, classification_network, measure)
     oa = StandardGeneticAlgorithm(P, mate, mutate, nnop)
     train(oa, classification_network, oa_name, training_ints,validation_ints,testing_ints, measure)
@@ -105,8 +105,8 @@ def main(P,mate,mutate):
 
 
 if __name__ == "__main__":
-    for p in [50]:
-        for mate in [20,10]:
-            for mutate in [20,10]:
+    for p in [100,50]:
+        for mate in [50,20,10]:
+            for mutate in [50,20,10]:
                 args = (p,mate,mutate)
                 main(*args)
